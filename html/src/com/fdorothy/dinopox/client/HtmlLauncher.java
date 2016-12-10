@@ -3,7 +3,7 @@ package com.fdorothy.dinopox.client;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtApplicationConfiguration;
-import com.fdorothy.dinopox.DinoPox;
+import com.fdorothy.dinopox.DinoGame;
 
 public class HtmlLauncher extends GwtApplication {
 
@@ -14,6 +14,6 @@ public class HtmlLauncher extends GwtApplication {
 
         @Override
         public ApplicationListener createApplicationListener () {
-                return new DinoPox();
+                return new DinoGame();
         }
 }
