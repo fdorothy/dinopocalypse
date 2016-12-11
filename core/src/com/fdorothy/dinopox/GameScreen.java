@@ -35,7 +35,7 @@ public class GameScreen implements Screen {
 
     camera = new OrthographicCamera();
     camera.setToOrtho(false, game.res.width, game.res.height);
-    camera.zoom = 1.0f;
+    camera.zoom = 2.0f;
 
     camera_hud = new OrthographicCamera();
     camera_hud.setToOrtho(false, game.res.width, game.res.height);
@@ -124,6 +124,7 @@ public class GameScreen implements Screen {
     for (int i=0; i<dinos.size; i++) {
       dinos.get(i).update(dt);
     }
+    survivor.update(dt);
     man_update();
   }
 
@@ -131,23 +132,6 @@ public class GameScreen implements Screen {
     // update the man's location (cannot move over blocks)
     float dx = 0.0f;
     float dy = 0.0f;
-    boolean moved = false;
-    if (Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.UP)) {
-      dy += dt * 32.0 * 4;
-      moved = true;
-    }
-    if (Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.DOWN)) {
-      dy -= dt * 32.0 * 4;
-      moved = true;
-    }
-    if (Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT)) {
-      dx -= dt * 32.0 * 4;
-      moved = true;
-    }
-    if (Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT)) {
-      dx += dt * 32.0 * 4;
-      moved = true;
-    }
     if (Gdx.input.isKeyJustPressed(Keys.SPACE)) {
       survivor.action(map);
     }
@@ -156,14 +140,6 @@ public class GameScreen implements Screen {
         dinos.get(i).shoot(10);
       }
     }
-    if (moved) {
-      float new_x = survivor.pos.x + dx;
-      float new_y = survivor.pos.y + dy;
-      if (!map.is_blocked(new_x, new_y)) {
-        survivor.set_pos(new_x, new_y);
-      }
-    }
-
     if (Gdx.input.justTouched()) {
       int x = Gdx.input.getX();
       int y = Gdx.input.getY();
@@ -171,6 +147,8 @@ public class GameScreen implements Screen {
       float min_d=100.0f;
       Dino min_z = null;
       for (int i=0; i<100; i++) {
+
+        // if there's a dino nearby then shoot
         Dino z = dinos.get(i);
         if (z.state == 2) {
           float d = cur.dst(z.pos);
@@ -179,9 +157,19 @@ public class GameScreen implements Screen {
             min_z = z;
           }
         }
-        if (min_z != null && min_d < 32.0f) {
-          min_z.shoot();
-        }
+        if (min_z != null && min_d < 128.0f) {
+          // fire a bullet in that direction
+          float b_x = z.pos.x - survivor.pos.x;
+          float b_y = z.pos.y - survivor.pos.y;
+          float d = survivor.pos.dst(z.pos);
+          Vector3 facing = new Vector3(b_x / d, b_y / d, 0.0f);
+          survivor.bullet.shoot(survivor.pos, facing);
+          survivor.stop();
+        } else {
+          // attempt to move
+          survivor.stop();
+          map.find_path(survivor.pos, cur, survivor.path);
+        }        
       }
     }
   }
@@ -229,7 +217,7 @@ public class GameScreen implements Screen {
 
         // dino reached the flag, we dead
         d = z.pos.dst(ai.objective);
-        if (d < 32) {
+        if (d < 64) {
           Gdx.app.log("game over", "dino got the flag, game over");
           game_over();
         }
@@ -244,7 +232,7 @@ public class GameScreen implements Screen {
         // bullet hit anything?
         if (survivor.bullet.inplay) {
           d = z.pos.dst(survivor.bullet.pos);
-          if (d < 32) {
+          if (d < 64) {
             z.shoot();
             survivor.bullet.inplay = false;
           } else if (!map.inBounds(survivor.bullet.pos)) {

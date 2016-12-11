@@ -2,7 +2,6 @@ package com.fdorothy.dinopox;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.ai.pfa.GraphPath;
 
 public class Dino extends Sprite {
   public static final int STATE_VOID=0;
@@ -10,17 +9,12 @@ public class Dino extends Sprite {
   public static final int STATE_ALIVE=2;
   public static final int STATE_DEAD=3;
 
-  public static final float SPEED_BASE=64.0f;
+  public static final float SPEED_BASE=32.0f;
 
   //  0 = void, 1 = spawning, 2 = alive, 3 = dead
   public int state;
   public float spawn_timer;
   public Map map;
-
-  // path finding stuff
-  public GraphPath <PathNode> path;
-  public PathNode objective;
-  public int pathIndex;
 
   // attributes of this dino
   public int species;
@@ -33,7 +27,6 @@ public class Dino extends Sprite {
     this.map = map;
     set_species(Resources.HARD);
     reset();
-    pathIndex = 0;
   }
 
   public void set_species(int species) {
@@ -73,14 +66,15 @@ public class Dino extends Sprite {
   }
 
   public void reset() {
+    super.reset();
     state = 0;
-    pathIndex = 0;
     spawn_timer = 0.0f;
     objective = null;
     set_species(this.species);
   }
 
   public void update(float dt) {
+    super.update(dt);
     if (spawn_timer > 0.0f) {
       spawn_timer -= dt;
     }
@@ -89,9 +83,12 @@ public class Dino extends Sprite {
     } else if (state == STATE_DEAD) {
       state = STATE_VOID;
     } else {
-      float speedFactor = SPEED_BASE;
-      if (map.is_blocked(pos)) { speedFactor = 0.25f; }
-      move(dt, speedFactor * speed);
+      if (map.is_blocked(pos)) {
+        map.hit_block(pos, strength * dt);
+      } else {
+        float speedFactor = SPEED_BASE;
+        move(dt, SPEED_BASE * speed);
+      }
     }
   }
 

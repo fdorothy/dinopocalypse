@@ -13,6 +13,11 @@ public class Survivor extends Sprite {
     bullet = new Bullet();
   }
 
+  public void update(float dt) {
+    super.update(dt);
+    move(dt, 128.0f);
+  }
+
   public void action(Map map) {
     float x = pos.x + facing.x * 30.0f;
     float y = pos.y + facing.y * 30.0f;

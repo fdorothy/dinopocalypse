@@ -74,6 +74,7 @@ public class Wave {
       break;
     case STATE_ATTACK:
       print(batch, "wave " + wave, 0);
+      print(batch, "remaining dinos: " + ai.dinos.size, 1);
       break;
     case STATE_WON:
       print(batch, "you defeated General Akylee, congratulations!", 0);
@@ -99,7 +100,6 @@ public class Wave {
     else if (edge == 3) {
       dino.spawn(t * map.width * 32.0f, map.height * 32.0f - 16.0f, time);
     }
-    dino.path = new DefaultGraphPath <PathNode>();
     ai.manage(dino);
   }
 

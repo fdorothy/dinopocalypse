@@ -16,7 +16,7 @@ public class AI {
 
   public AI(Map map) {
     dinos = new Array <Dino>();
-    objective = new Vector3(map.width / 2.0f * 32.0f, map.height / 2.0f * 32.0f, 0.0f);
+    objective = new Vector3(40 * 32.0f, 38 * 32.0f, 0.0f);
     reset(map);
   }
 
@@ -50,13 +50,8 @@ public class AI {
     while (t > freq) {
       Dino dino = next_dino_to_update();
       if (dino != null)
-        update_path(next_dino_to_update());
+        update_path(dino);
       t -= freq;
-    }
-
-    // force the dinos to follow a path
-    for (int i=0; i<dinos.size; i++) {
-      follow_path(dinos.get(i));
     }
   }
 
@@ -74,31 +69,7 @@ public class AI {
   public void update_path(Dino dino) {
     dino.pathIndex = 0;
     dino.objective = null;
+    dino.stop();
     map.find_path(dino.pos, objective, dino.path);
-  }
-
-  public void follow_path(Dino dino) {
-    // update the dino's objective based on the current path
-    if (dino.pathIndex < dino.path.getCount()) {
-      if (dino.objective == null && dino.path != null) {
-        dino.pathIndex = 0;
-        next_path_node(dino);
-      }
-      else if (objective != null && dino.pos.dst(dino.objective.x*32, dino.objective.y*32, 0.0f) < 16.0f) {
-        next_path_node(dino);
-      }
-    }
-  }
-
-  public void next_path_node(Dino dino) {
-    if (dino.pathIndex < dino.path.getCount()) {
-      dino.objective = dino.path.get(dino.pathIndex++);
-      float obj_x = dino.objective.x*32.0f;
-      float obj_y = dino.objective.y*32.0f;
-      float d = dino.pos.dst(obj_x, obj_y, 0.0f);
-      dino.set_destination((obj_x - dino.pos.x) / d, (obj_y - dino.pos.y) / d);
-    } else {
-      dino.set_destination(0.0f, 0.0f);
-    }
   }
 }

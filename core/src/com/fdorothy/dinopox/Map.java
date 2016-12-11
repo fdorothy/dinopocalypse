@@ -26,6 +26,7 @@ public class Map {
   public int height;
   public PathHeuristic heuristic;
   public IndexedAStarPathFinder pathFinder;
+  public float blockHealth[];
 
   // path finding related
   PathGraph graph;
@@ -38,6 +39,8 @@ public class Map {
     renderer = new OrthogonalTiledMapRenderer(this.map, unitScale);
     width = groundLayer.getWidth();
     height = groundLayer.getHeight();
+    blockHealth = new float[width*height];
+    for (int i=0; i<width*height; i++) blockHealth[i] = 5.0f;
     generate_path_graph();
   }
 
@@ -53,19 +56,28 @@ public class Map {
       return Item.VOID;
   }
 
+  public void hit_block(Vector3 pos, float damage) {
+    int i = x_to_tile(pos.x);
+    int j = y_to_tile(pos.y);
+    int idx = i+j*width;
+    blockHealth[idx] -= damage;
+    if (blockHealth[idx] <= 0.0f)
+      set_item(i, j, Item.VOID);
+  }
+
   public void set_item(float x, float y, int item_id) {
     set_item(x_to_tile(x), y_to_tile(y), item_id);
   }
 
   public void set_item(int i, int j, int item_id) {
     if (item_id == Item.VOID) {
-      Gdx.app.log("map", "nullifying");
       blocksLayer.setCell(i, j, null);
+      blockHealth[i+j*width] = 0.0f;
     } else {
       Cell cell = new Cell();
       cell.setTile(map.getTileSets().getTile(item_id));
       blocksLayer.setCell(i, j, cell);
-      Gdx.app.log("map", "OK, setting cell to item " + item_id);
+      blockHealth[i+j*width] = 5.0f;
     }
   }
 
@@ -97,11 +109,10 @@ public class Map {
     heuristic = new PathHeuristic();
     for (int i=0; i<width; i++) {
       for (int j=0; j<height; j++) {
-        Cell cell = blocksLayer.getCell(x_to_tile(i), y_to_tile(j));
-        float cost = 1.0f;
-        if (cell != null)
-          cost = 5.0f;
-        graph.set_cost(i, j, cost);
+        if (get_item(i, j) == Item.BLOCK)
+          graph.set_cost(i, j, 10.0f);
+        else
+          graph.set_cost(i, j, 1.0f);
       }
     }
     pathFinder = new IndexedAStarPathFinder<PathNode>(graph, true);
@@ -116,11 +127,9 @@ public class Map {
   }
 
   public void find_path(int src_i, int src_j, int dst_i, int dst_j, GraphPath <PathNode> outPath) {
-    Gdx.app.log("map", "finding path between " + src_i + ", " + src_j + "; " + dst_i + ", " + dst_j);
     PathNode src_n = graph.at(src_i, src_j);
     PathNode dst_n = graph.at(dst_i, dst_j);
-    Gdx.app.log("map", "found nodes " + src_n.index + ", " + dst_n.index);
-    boolean found = pathFinder.searchNodePath(src_n, dst_n, heuristic, outPath);
-    Gdx.app.log("map", "OK, found = " + found);
+    if (src_n != null && dst_n != null)
+      pathFinder.searchNodePath(src_n, dst_n, heuristic, outPath);
   }
 }
