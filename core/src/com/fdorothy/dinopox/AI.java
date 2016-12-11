@@ -34,20 +34,23 @@ public class AI {
   public void update(float dt) {
     t += dt;
 
+    // clear out dead dinos
+    for (int i=0; i<dinos.size; i++) {
+      int state = dinos.get(i).state;
+      if (state != Dino.STATE_ALIVE && state != Dino.STATE_SPAWNING) {
+        dinos.removeIndex(i);
+        i--;
+      }
+    }
+
     // only update so many a* paths per second
     // for our dinos so that we do not get
     // overloaded
     float freq = 1.0f / UPDATES_PER_SECOND;
     while (t > freq) {
       Dino dino = next_dino_to_update();
-      if (dino != null) {
-        if (dino.state == Dino.STATE_ALIVE) {
-          update_path(next_dino_to_update());
-        } else {
-          dinos.removeIndex(dino_index);
-          dino_index = 0;
-        }
-      }
+      if (dino != null)
+        update_path(next_dino_to_update());
       t -= freq;
     }
 

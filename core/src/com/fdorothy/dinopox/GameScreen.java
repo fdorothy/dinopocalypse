@@ -24,21 +24,14 @@ public class GameScreen implements Screen {
   Survivor survivor;
   Array<Dino> dinos;
   AI ai;
-  int wave;
   Map map;
-  long last_millis;
-  long start_millis;
-
+  Wave wave;
   OrthographicCamera camera;
   OrthographicCamera camera_hud;
-
   final DinoGame game;
 
   public GameScreen(final DinoGame game) {
     this.game = game;
-
-    last_millis = TimeUtils.millis();
-    start_millis = last_millis;
 
     camera = new OrthographicCamera();
     camera.setToOrtho(false, game.res.width, game.res.height);
@@ -56,6 +49,7 @@ public class GameScreen implements Screen {
       dinos.add(new Dino(map));
     }
     ai = new AI(map);
+    wave = new Wave(game, ai, map, dinos);
 
     new_game();
   }
@@ -119,22 +113,13 @@ public class GameScreen implements Screen {
   public void draw_hud() {
     camera_hud.update();
     game.res.batch_hud.setProjectionMatrix(camera_hud.combined);
-
     game.res.batch_hud.begin();
-
-    // time-alive
-    int time_alive = (int)((last_millis - start_millis) / 1000);
-    int seconds = (int)time_alive % 60;
-    int minutes = (int)(time_alive / 60) % 60;
-    int hours = (int)(time_alive / 3600);
-    game.res.font.draw(game.res.batch_hud, "" + hours + ":" + minutes + ":" + seconds, game.res.width/2.0f, game.res.height-20);
-
-    game.res.font.draw(game.res.batch_hud, "wave " + wave, game.res.width/2.0f, game.res.height-40);
-
+    wave.render(game.res.batch_hud);
     game.res.batch_hud.end();
   }
 
   public void update(float dt) {
+    wave.update(dt);
     ai.update(dt);
     for (int i=0; i<dinos.size; i++) {
       dinos.get(i).update(dt);
@@ -165,6 +150,11 @@ public class GameScreen implements Screen {
     }
     if (Gdx.input.isKeyJustPressed(Keys.SPACE)) {
       survivor.action(map);
+    }
+    if (Gdx.input.isKeyJustPressed(Keys.ENTER)) {
+      for (int i=0; i<dinos.size; i++) {
+        dinos.get(i).shoot(10);
+      }
     }
     if (moved) {
       float new_x = survivor.pos.x + dx;
@@ -197,28 +187,17 @@ public class GameScreen implements Screen {
   }
 	
   @Override
-  public void dispose () {
-  }
-  
+  public void dispose () {}
   @Override
-  public void hide() {
-  }
-
+  public void hide() {}
   @Override
-  public void resume() {
-  }
-
+  public void resume() {}
   @Override
-  public void pause() {
-  }
-
+  public void pause() {}
   @Override
-  public void resize(int w, int h) {
-  }
-
+  public void resize(int w, int h) {}
   @Override
-  public void show() {
-  }
+  public void show() {}
 
   public void new_game() {
     for (int i=0; i<100; i++) {
@@ -227,12 +206,11 @@ public class GameScreen implements Screen {
     survivor.reset();
     survivor.pos.x = (map.width+1.5f) / 2.0f * 32.0f;
     survivor.pos.y = (map.height+1.5f) / 2.0f * 32.0f;
-    wave = 1;
-    spawn();
+    wave.reset();
   }
 
   public void game_over() {
-    game.setScreen(new GameOverScreen(game, (last_millis - start_millis) / 1000));
+    game.setScreen(new GameOverScreen(game, 0));
   }
 
   void man_update() {
@@ -298,7 +276,7 @@ public class GameScreen implements Screen {
         if (d.state == Dino.STATE_ALIVE)
           if (hit_by_bomb(d, bomb_x, bomb_y)) {
             Gdx.app.log("bomb", "dino hit by bomb");
-            d.shoot();
+            d.shoot(3);
           }
       }
     }
@@ -307,44 +285,5 @@ public class GameScreen implements Screen {
   boolean hit_by_bomb(Sprite sprite, float bomb_x, float bomb_y)
   {
     return sprite.pos.dst(bomb_x, bomb_y, 0.0f) < 2.0f * 32.0f;
-  }
-
-  void edge_spawn(Dino dino)
-  {
-    Gdx.app.log("spawn", "spawned a dino on the edge");
-    int edge = MathUtils.random.nextInt(4);
-    float t = MathUtils.random.nextInt(100) / 100.0f;
-    if (edge == 0) {
-      dino.spawn(16.0f, t * map.height * 32.0f);
-    }
-    else if (edge == 1) {
-      dino.spawn(t * map.width * 32.0f, 16.0f);
-    }
-    else if (edge == 2) {
-      dino.spawn(map.width * 32.0f - 16.0f, t * map.height * 32.0f);
-    }
-    else if (edge == 3) {
-      dino.spawn(t * map.width * 32.0f, map.height * 32.0f - 16.0f);
-    }
-    dino.path = new DefaultGraphPath <PathNode>();
-    ai.manage(dino);
-  }
-
-  void spawn() {
-    Gdx.app.log("spawn", "spawn()");
-    // reset all dinos
-    for (int i=0; i<dinos.size; i++)
-      dinos.get(i).reset();
-
-    final int WAVE_SIZE = 10;
-    if (wave == 1) {
-      for (int i=0; i<WAVE_SIZE; i++) {
-        Dino dino = dinos.get(i);
-        dino.set_species(Resources.HARD);
-        edge_spawn(dino);
-      }
-    } else if (wave == 1) {
-    }
-    // ...
   }
 }
