@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class Sprite {
   public TextureRegion img;
@@ -60,5 +61,11 @@ public class Sprite {
       else
         batch.draw(img, (pos.x+w) - w / 2.0f, pos.y, -w, h);
     }
+  }
+
+  public void draw_box(ShapeRenderer renderer) {
+    int tile_x = (int)(pos.x/32.0f);
+    int tile_y = (int)(pos.y/32.0f);
+    renderer.rect(tile_x*32, tile_y*32, 32.0f, 32.0f);
   }
 }

@@ -93,15 +93,25 @@ public class GameScreen implements Screen {
 
     game.res.batch.end();
 
-    // draw the bullet
     ShapeRenderer r = game.res.shapeRenderer;
     r.setProjectionMatrix(camera.combined);
+
+    // draw the bullet
     Bullet b = survivor.bullet;
     if (b.inplay) {
       r.begin(ShapeRenderer.ShapeType.Filled);
       r.setColor(1, 0, 0, 1);
       r.rectLine(b.pos.x, b.pos.y, b.pos.x-b.dir.x * 10, b.pos.y-b.dir.y * 10, 4);
       r.end();
+    }
+
+    // draw the bounding boxes of all sprites, for debug
+    r.begin(ShapeRenderer.ShapeType.Line);
+    survivor.draw_box(r);
+    for (int i=0; i<dinos.size; i++) {
+      Dino d = dinos.get(i);
+      if (d != null && d.state == Dino.STATE_ALIVE)
+        d.draw_box(r);
     }
     r.end();
   }
@@ -181,7 +191,6 @@ public class GameScreen implements Screen {
         }
         if (min_z != null && min_d < 32.0f) {
           min_z.shoot();
-          //survivor.ammo--;
         }
       }
     }
@@ -227,17 +236,34 @@ public class GameScreen implements Screen {
   }
 
   void man_update() {
-    // have we been hit?
+    // have we been hit or has a dino reached the flag?
     Dino z = null;
     for (int i=0; i<dinos.size; i++) {
       z = dinos.get(i);
       if (z.state == 2) {
+
+        // dino hit us, we dead
         float d = z.pos.dst(survivor.pos);
         if (d < 32) {
+          Gdx.app.log("game over", "dino hit us, game over");
           game_over();
         }
 
-        // shot anything?
+        // dino reached the flag, we dead
+        d = z.pos.dst(ai.objective);
+        if (d < 32) {
+          Gdx.app.log("game over", "dino got the flag, game over");
+          game_over();
+        }
+
+        // dino hit bomb, everything around is dead
+        int tile_x = map.x_to_tile(z.pos.x);
+        int tile_y = map.y_to_tile(z.pos.y);
+        if (map.get_item(tile_x, tile_y) == Item.BOMB) {
+          explode_bomb(tile_x, tile_y);
+        }
+
+        // bullet hit anything?
         if (survivor.bullet.inplay) {
           d = z.pos.dst(survivor.bullet.pos);
           if (d < 32) {
@@ -257,6 +283,30 @@ public class GameScreen implements Screen {
       survivor.bullet.pos.x += survivor.bullet.dir.x * 16;
       survivor.bullet.pos.y += survivor.bullet.dir.y * 16;
     }
+  }
+
+  void explode_bomb(int i, int j) {
+    map.set_item(i, j, Item.VOID);
+    float bomb_x = (i + 0.5f) * 32.0f;
+    float bomb_y = (j + 0.5f) * 32.0f;
+    if (hit_by_bomb(survivor, bomb_x, bomb_y)) {
+      Gdx.app.log("game over", "survivor hit by bomb, game over");
+      game_over();
+    } else {
+      for (int idx=0; idx<dinos.size; idx++) {
+        Dino d = dinos.get(idx);
+        if (d.state == Dino.STATE_ALIVE)
+          if (hit_by_bomb(d, bomb_x, bomb_y)) {
+            Gdx.app.log("bomb", "dino hit by bomb");
+            d.shoot();
+          }
+      }
+    }
+  }
+
+  boolean hit_by_bomb(Sprite sprite, float bomb_x, float bomb_y)
+  {
+    return sprite.pos.dst(bomb_x, bomb_y, 0.0f) < 2.0f * 32.0f;
   }
 
   void edge_spawn(Dino dino)
