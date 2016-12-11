@@ -7,6 +7,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.ai.pfa.indexed.IndexedAStarPathFinder;
 import com.badlogic.gdx.ai.pfa.indexed.IndexedGraph;
 import com.badlogic.gdx.ai.pfa.DefaultGraphPath;
+import com.badlogic.gdx.ai.pfa.GraphPath;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -23,6 +24,8 @@ public class Map {
   public TiledMapTileLayer brushLayer;
   public int width;
   public int height;
+  public PathHeuristic heuristic;
+  public IndexedAStarPathFinder pathFinder;
 
   // path finding related
   PathGraph graph;
@@ -61,5 +64,33 @@ public class Map {
 
   public void generate_path_graph() {
     graph = new PathGraph(width, height);
+    heuristic = new PathHeuristic();
+    for (int i=0; i<width; i++) {
+      for (int j=0; j<height; j++) {
+        Cell cell = blocksLayer.getCell(x_to_tile(i), y_to_tile(j));
+        float cost = 1.0f;
+        if (cell != null)
+          cost = 5.0f;
+        graph.set_cost(i, j, cost);
+      }
+    }
+    pathFinder = new IndexedAStarPathFinder<PathNode>(graph, true);
+  }
+
+  public void find_path(Vector3 src, Vector3 dst, GraphPath <PathNode> outPath) {
+    find_path(x_to_tile(src.x),
+              y_to_tile(src.y),
+              x_to_tile(dst.x),
+              y_to_tile(dst.y),
+              outPath);
+  }
+
+  public void find_path(int src_i, int src_j, int dst_i, int dst_j, GraphPath <PathNode> outPath) {
+    Gdx.app.log("map", "finding path between " + src_i + ", " + src_j + "; " + dst_i + ", " + dst_j);
+    PathNode src_n = graph.at(src_i, src_j);
+    PathNode dst_n = graph.at(dst_i, dst_j);
+    Gdx.app.log("map", "found nodes " + src_n.index + ", " + dst_n.index);
+    boolean found = pathFinder.searchNodePath(src_n, dst_n, heuristic, outPath);
+    Gdx.app.log("map", "OK, found = " + found);
   }
 }

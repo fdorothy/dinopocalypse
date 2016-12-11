@@ -13,6 +13,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.ai.pfa.GraphPath;
+import com.badlogic.gdx.ai.pfa.DefaultGraphPath;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.MathUtils;
@@ -22,6 +24,7 @@ public class GameScreen implements Screen {
   Survivor survivor;
   Array<Dino> dinos;
   Array<Item> items;
+  AI ai;
   int wave;
   Map map;
   long last_millis;
@@ -56,6 +59,7 @@ public class GameScreen implements Screen {
     for (int i=0; i<20; i++) {
       items.add(new Item(map));
     }
+    ai = new AI(map);
 
     new_game();
   }
@@ -127,6 +131,7 @@ public class GameScreen implements Screen {
   }
 
   public void update(float dt) {
+    ai.update(dt);
     for (int i=0; i<dinos.size; i++) {
       dinos.get(i).update(dt);
     }
@@ -293,6 +298,8 @@ public class GameScreen implements Screen {
     else if (edge == 3) {
       dino.spawn(t * map.width * 32.0f, map.height * 32.0f - 16.0f);
     }
+    dino.path = new DefaultGraphPath <PathNode>();
+    ai.manage(dino);
   }
 
   void spawn() {
@@ -305,7 +312,7 @@ public class GameScreen implements Screen {
     if (wave == 1) {
       for (int i=0; i<WAVE_SIZE; i++) {
         Dino dino = dinos.get(i);
-        dino.species = Resources.HARD;
+        dino.set_species(Resources.HARD);
         edge_spawn(dino);
       }
     } else if (wave == 1) {

@@ -22,8 +22,8 @@ public class PathGraph implements IndexedGraph<PathNode> {
     }
 
     //  connect all of the nodes
-    for (int i=1; i<width-1; i++) {
-      for (int j=1; j<height-1; j++) {
+    for (int i=0; i<width; i++) {
+      for (int j=0; j<height; j++) {
         PathNode n = at(i,j);
         if (n != null) {
           PathNode n_l = at(i-1,j);
@@ -45,7 +45,7 @@ public class PathGraph implements IndexedGraph<PathNode> {
   }
 
   public PathNode at(int i, int j) {
-    if (i >= 0 && j >= 0 && i <= width && j <= height) {
+    if (i >= 0 && j >= 0 && i < width && j < height) {
       return nodes[i+j*width];
     } else {
       return null;

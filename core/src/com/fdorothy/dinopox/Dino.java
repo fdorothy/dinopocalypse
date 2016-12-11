@@ -1,6 +1,8 @@
 package com.fdorothy.dinopox;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.ai.pfa.GraphPath;
 
 public class Dino {
   public static final int STATE_VOID=0;
@@ -18,16 +20,32 @@ public class Dino {
   public float spawn_timer;
   public Map map;
   public int species;
+  public GraphPath <PathNode> path;
+  public PathNode objective;
+  public int pathIndex;
+  public float speed;
 
   Dino(Map map) {
     this.map = map;
     this.species = Resources.HARD;
     reset();
+    pathIndex = 0;
+  }
+
+  public void set_species(int species) {
+    this.species = species;
+    switch (species) {
+    case Resources.HARD:
+      speed = 1 * 32.0f;
+      break;
+    }
   }
 
   public void reset() {
     state = 0;
+    pathIndex = 0;
     spawn_timer = 0.0f;
+    objective = null;
     pos = new Vector3();
     delta = new Vector3();
     new_pos = new Vector3();
@@ -38,18 +56,18 @@ public class Dino {
     if (spawn_timer > 0.0f) {
       spawn_timer -= dt;
     }
-    else if (state == 1) {
-      state = 2;
-    } else if (state == 3) {
-      state = 0;
+    else if (state == STATE_SPAWNING) {
+      state = STATE_ALIVE;
+    } else if (state == STATE_DEAD) {
+      state = STATE_VOID;
     } else {
       float speedFactor = 1.0f;
       if (map.is_blocked(pos)) { speedFactor = 0.25f; }
-      new_pos.x = pos.x + delta.x*dt*speedFactor;
-      new_pos.y = pos.y + delta.y*dt*speedFactor;
-      if (map.inBounds(new_pos)) {
-        set_pos(new_pos.x, new_pos.y);
-      }
+      new_pos.x = pos.x + delta.x*dt*speedFactor*speed;
+      new_pos.y = pos.y + delta.y*dt*speedFactor*speed;
+      //if (map.inBounds(new_pos)) {
+      set_pos(new_pos.x, new_pos.y);
+      //}
     }
   }
 
@@ -75,7 +93,7 @@ public class Dino {
 
   public void shoot() {
     if (state == 2) {
-      state = 3;
+      state = STATE_DEAD;
       spawn_timer = 10.0f;
       delta.set(0.0f,0.0f,0.0f);
     }
