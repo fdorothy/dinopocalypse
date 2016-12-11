@@ -23,7 +23,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 public class GameScreen implements Screen {
   Survivor survivor;
   Array<Dino> dinos;
-  Array<Item> items;
   AI ai;
   int wave;
   Map map;
@@ -51,13 +50,10 @@ public class GameScreen implements Screen {
     map = new Map(game.res.map);
 
     survivor = new Survivor();
+    survivor.img = game.res.man;
     dinos = new Array<Dino>();
     for (int i=0; i<100; i++) {
       dinos.add(new Dino(map));
-    }
-    items = new Array<Item>();
-    for (int i=0; i<20; i++) {
-      items.add(new Item(map));
     }
     ai = new AI(map);
 
@@ -66,7 +62,6 @@ public class GameScreen implements Screen {
   
   @Override
   public void render (float dt) {
-    last_millis = TimeUtils.millis();
     update(dt);
 
     Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -85,15 +80,14 @@ public class GameScreen implements Screen {
     map.renderer.render();
 
     game.res.batch.begin();
-    draw_avatar(game.res.man, survivor.pos, survivor.facing.x);
+    survivor.draw(game.res.batch);
 
     for (int i=0; i<100; i++) {
-      Dino z = dinos.get(i);
-      if (z.state == Dino.STATE_ALIVE) {
-        draw_avatar(game.res.dinos[z.species], z.pos, 1);
-      } else if (z.state == 1) {
-      } else if (z.state == 3) {
-        //draw_avatar(game.res.dead, z.pos);
+      Dino dino = dinos.get(i);
+      if (dino.state == Dino.STATE_ALIVE) {
+        dino.draw(game.res.batch);
+      } else if (dino.state == 1) {
+      } else if (dino.state == 3) {
       }
     }
 
@@ -135,14 +129,10 @@ public class GameScreen implements Screen {
     for (int i=0; i<dinos.size; i++) {
       dinos.get(i).update(dt);
     }
-    for (int i=0; i<items.size; i++) {
-      items.get(i).update(dt);
-    }
     man_update();
   }
 
   public void process_input(float dt) {
-
     // update the man's location (cannot move over blocks)
     float dx = 0.0f;
     float dy = 0.0f;
@@ -178,17 +168,15 @@ public class GameScreen implements Screen {
       int x = Gdx.input.getX();
       int y = Gdx.input.getY();
       Vector3 cur = camera.unproject(new Vector3((float)x, (float)y, 0.0f));
-      if (survivor.ammo > 0) {
-        float min_d=100.0f;
-        Dino min_z = null;
-        for (int i=0; i<100; i++) {
-          Dino z = dinos.get(i);
-          if (z.state == 2) {
-            float d = cur.dst(z.pos);
-            if (d < min_d) {
-              min_d = d;
-              min_z = z;
-            }
+      float min_d=100.0f;
+      Dino min_z = null;
+      for (int i=0; i<100; i++) {
+        Dino z = dinos.get(i);
+        if (z.state == 2) {
+          float d = cur.dst(z.pos);
+          if (d < min_d) {
+            min_d = d;
+            min_z = z;
           }
         }
         if (min_z != null && min_d < 32.0f) {
@@ -236,16 +224,6 @@ public class GameScreen implements Screen {
 
   public void game_over() {
     game.setScreen(new GameOverScreen(game, (last_millis - start_millis) / 1000));
-  }
-
-  void draw_avatar(TextureRegion image, Vector3 pos, float facing) {
-    if (facing > 0)
-      game.res.batch.draw(image, pos.x - image.getRegionWidth() / 2.0f, pos.y);
-    else {
-      float w = image.getRegionWidth();
-      float h = image.getRegionHeight();
-      game.res.batch.draw(image, (pos.x+w) - w / 2.0f, pos.y, -w, h);
-    }
   }
 
   void man_update() {

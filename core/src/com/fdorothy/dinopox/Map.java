@@ -41,8 +41,32 @@ public class Map {
     generate_path_graph();
   }
 
-  public boolean is_blocked(Vector3 pos) {
-    return is_blocked(pos.x, pos.y);
+  public int get_item(float x, float y) {
+    return get_item(x_to_tile(x), y_to_tile(y));
+  }
+
+  public int get_item(int i, int j) {
+    Cell cell = blocksLayer.getCell(i, j);
+    if (cell != null && cell.getTile() != null)
+      return cell.getTile().getId();
+    else
+      return Item.VOID;
+  }
+
+  public void set_item(float x, float y, int item_id) {
+    set_item(x_to_tile(x), y_to_tile(y), item_id);
+  }
+
+  public void set_item(int i, int j, int item_id) {
+    if (item_id == Item.VOID) {
+      Gdx.app.log("map", "nullifying");
+      blocksLayer.setCell(i, j, null);
+    } else {
+      Cell cell = new Cell();
+      cell.setTile(map.getTileSets().getTile(item_id));
+      blocksLayer.setCell(i, j, cell);
+      Gdx.app.log("map", "OK, setting cell to item " + item_id);
+    }
   }
 
   public int x_to_tile(float x) {
@@ -53,9 +77,15 @@ public class Map {
     return (int)(y/TILE_WIDTH);
   }
 
+  public boolean is_blocked(Vector3 pos) {
+    return is_blocked(pos.x, pos.y);
+  }
+
   public boolean is_blocked(float x, float y) {
     Cell cell = blocksLayer.getCell(x_to_tile(x), y_to_tile(y));
-    return cell != null;
+    if (cell != null)
+      return cell.getTile().getId() == Item.BLOCK;
+    return false;
   }
 
   public boolean inBounds(Vector3 pos) {
