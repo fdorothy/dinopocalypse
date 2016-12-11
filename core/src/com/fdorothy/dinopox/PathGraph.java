@@ -39,6 +39,11 @@ public class PathGraph implements IndexedGraph<PathNode> {
     }
   }
 
+  public void set_cost(int i, int j, float new_cost) {
+    PathNode n = at(i,j);
+    if (n != null) n.cost = new_cost;
+  }
+
   public PathNode at(int i, int j) {
     if (i >= 0 && j >= 0 && i <= width && j <= height) {
       return nodes[i+j*width];
