@@ -32,7 +32,6 @@ public class GameScreen implements Screen {
   public int item_state=0;
   public final int ITEM_STATE_NONE=0;
   public final int ITEM_STATE_DROP=1;
-  public final int ITEM_STATE_PICKUP=2;
 
   public GameScreen(final DinoGame game) {
     this.game = game;
@@ -121,12 +120,14 @@ public class GameScreen implements Screen {
     wave.render(game.res.batch_hud);
     if (item_state == ITEM_STATE_NONE) {
       if (survivor.item != Item.VOID) {
-        game.res.batch_hud.draw(game.res.place, 0, 0, 64, 64);
+        TextureRegion t = game.res.item_tiles.get(survivor.item).getTextureRegion();
+        game.res.batch_hud.draw(game.res.place, 8, 8);
+        game.res.batch_hud.draw(t, 16, 16, 32, 32);
       } else {
-        game.res.batch_hud.draw(game.res.pickup, 0, 0, 64, 64);
+        //game.res.batch_hud.draw(game.res.pickup, 0, 0, 64, 64);
       }
     } else {
-      game.res.batch_hud.draw(game.res.cancel, 0, 0, 64, 64);
+      game.res.batch_hud.draw(game.res.cancel, 8, 8);
     }
     game.res.batch_hud.end();
   }
@@ -160,9 +161,7 @@ public class GameScreen implements Screen {
       // are we about to drop something?
       if (x >= 0 && (game.res.height-y) >= 0 && x < 64 && (game.res.height-y) < 64) {
         if (item_state == ITEM_STATE_NONE) {
-          if (survivor.item == Item.VOID)
-            item_state = ITEM_STATE_PICKUP;
-          else
+          if (survivor.item != Item.VOID)
             item_state = ITEM_STATE_DROP;
         } else
           item_state = ITEM_STATE_NONE;
@@ -195,7 +194,7 @@ public class GameScreen implements Screen {
           // attempt to move
           survivor.stop();
           map.find_path(survivor.pos, cur, survivor.path);
-          if (item_state != ITEM_STATE_NONE) {
+          if (item_state != ITEM_STATE_NONE || survivor.item == Item.VOID) {
             Gdx.app.log("action", "doing action");
             survivor.action(cur.x, cur.y);
           }

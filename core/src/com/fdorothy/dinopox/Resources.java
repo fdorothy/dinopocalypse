@@ -44,7 +44,6 @@ public class Resources {
     item_tiles = new IntMap<TiledMapTile>();
     item_tiles.put(Item.BOMB, map.getTileSets().getTile(Item.BOMB));
     item_tiles.put(Item.BLOCK, map.getTileSets().getTile(Item.BLOCK));
-    block = new TextureRegion(sprites, 192, 320, 32, 32);
     dinos = new TextureRegion[5];
     place = new Texture("place.png");
     pickup = new Texture("pickup.png");
