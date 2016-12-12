@@ -41,7 +41,7 @@ public class Sprite {
     set_pos(pos.x + delta.x*distance*dt, pos.y + delta.y*distance*dt);
   }
 
- public void set_pos(float x, float y) {
+  public void set_pos(float x, float y) {
     if (x > pos.x)
       facing.x = 1;
     else if (x < pos.x)

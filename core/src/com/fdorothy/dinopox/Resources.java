@@ -19,6 +19,9 @@ public class Resources {
   public static final int LEE=4;
 
   public Texture sprites;
+  public Texture place;
+  public Texture pickup;
+  public Texture cancel;
   public TextureRegion man;
   public TextureRegion bomb;
   public TextureRegion block;
@@ -41,6 +44,9 @@ public class Resources {
     item_tiles.put(Item.BLOCK, map.getTileSets().getTile(Item.BLOCK));
     block = new TextureRegion(sprites, 192, 320, 32, 32);
     dinos = new TextureRegion[5];
+    place = new Texture("place.png");
+    pickup = new Texture("pickup.png");
+    cancel = new Texture("cancel.png");
     dinos[HARD] = new TextureRegion(sprites, 0, 192, 160, 64);
     dinos[JUMP] = new TextureRegion(sprites, 160, 192, 64, 64);
     dinos[PARA] = new TextureRegion(sprites, 0, 128, 160, 64);

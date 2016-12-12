@@ -29,13 +29,17 @@ public class GameScreen implements Screen {
   OrthographicCamera camera;
   OrthographicCamera camera_hud;
   final DinoGame game;
+  public int item_state=0;
+  public final int ITEM_STATE_NONE=0;
+  public final int ITEM_STATE_DROP=1;
+  public final int ITEM_STATE_PICKUP=2;
 
   public GameScreen(final DinoGame game) {
     this.game = game;
 
     camera = new OrthographicCamera();
     camera.setToOrtho(false, game.res.width, game.res.height);
-    camera.zoom = 2.0f;
+    camera.zoom = 1.25f;
 
     camera_hud = new OrthographicCamera();
     camera_hud.setToOrtho(false, game.res.width, game.res.height);
@@ -115,6 +119,15 @@ public class GameScreen implements Screen {
     game.res.batch_hud.setProjectionMatrix(camera_hud.combined);
     game.res.batch_hud.begin();
     wave.render(game.res.batch_hud);
+    if (item_state == ITEM_STATE_NONE) {
+      if (survivor.item != Item.VOID) {
+        game.res.batch_hud.draw(game.res.place, 0, 0, 64, 64);
+      } else {
+        game.res.batch_hud.draw(game.res.pickup, 0, 0, 64, 64);
+      }
+    } else {
+      game.res.batch_hud.draw(game.res.cancel, 0, 0, 64, 64);
+    }
     game.res.batch_hud.end();
   }
 
@@ -124,7 +137,7 @@ public class GameScreen implements Screen {
     for (int i=0; i<dinos.size; i++) {
       dinos.get(i).update(dt);
     }
-    survivor.update(dt);
+    survivor.update(map, dt);
     man_update();
   }
 
@@ -143,25 +156,38 @@ public class GameScreen implements Screen {
     if (Gdx.input.justTouched()) {
       int x = Gdx.input.getX();
       int y = Gdx.input.getY();
-      Vector3 cur = camera.unproject(new Vector3((float)x, (float)y, 0.0f));
-      float min_d=100.0f;
-      Dino min_z = null;
-      for (int i=0; i<100; i++) {
 
-        // if there's a dino nearby then shoot
-        Dino z = dinos.get(i);
-        if (z.state == 2) {
-          float d = cur.dst(z.pos);
-          if (d < min_d) {
-            min_d = d;
-            min_z = z;
+      // are we about to drop something?
+      if (x >= 0 && (game.res.height-y) >= 0 && x < 64 && (game.res.height-y) < 64) {
+        if (item_state == ITEM_STATE_NONE) {
+          if (survivor.item == Item.VOID)
+            item_state = ITEM_STATE_PICKUP;
+          else
+            item_state = ITEM_STATE_DROP;
+        } else
+          item_state = ITEM_STATE_NONE;
+      } else {
+
+        Vector3 cur = camera.unproject(new Vector3((float)x, (float)y, 0.0f));
+        float min_d=100.0f;
+        Dino min_z = null;
+        for (int i=0; i<100; i++) {
+
+          // if there's a dino nearby then shoot
+          Dino z = dinos.get(i);
+          if (z.state == 2) {
+            float d = cur.dst(z.pos);
+            if (d < min_d) {
+              min_d = d;
+              min_z = z;
+            }
           }
         }
         if (min_z != null && min_d < 128.0f) {
           // fire a bullet in that direction
-          float b_x = z.pos.x - survivor.pos.x;
-          float b_y = z.pos.y - survivor.pos.y;
-          float d = survivor.pos.dst(z.pos);
+          float b_x = min_z.pos.x - survivor.pos.x;
+          float b_y = min_z.pos.y - survivor.pos.y;
+          float d = survivor.pos.dst(min_z.pos);
           Vector3 facing = new Vector3(b_x / d, b_y / d, 0.0f);
           survivor.bullet.shoot(survivor.pos, facing);
           survivor.stop();
@@ -169,6 +195,11 @@ public class GameScreen implements Screen {
           // attempt to move
           survivor.stop();
           map.find_path(survivor.pos, cur, survivor.path);
+          if (item_state != ITEM_STATE_NONE) {
+            Gdx.app.log("action", "doing action");
+            survivor.action(cur.x, cur.y);
+          }
+          item_state = ITEM_STATE_NONE;
         }        
       }
     }
