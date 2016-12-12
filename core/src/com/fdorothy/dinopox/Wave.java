@@ -16,7 +16,7 @@ public class Wave {
   public static final int STATE_ATTACK = 2;
   public static final int STATE_WON = 3;
   public static int TOTAL_WAVES = 10;
-  public static int PREPARE_TIME = 0;
+  public static int PREPARE_TIME = 45;
   public static final int WAVE_SIZE = 10;
 
   AI ai;

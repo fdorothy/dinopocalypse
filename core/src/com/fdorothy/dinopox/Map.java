@@ -27,6 +27,7 @@ public class Map {
   public PathHeuristic heuristic;
   public IndexedAStarPathFinder pathFinder;
   public float blockHealth[];
+  public static final int BLOCK_COST = 10;
 
   // path finding related
   PathGraph graph;
@@ -77,7 +78,12 @@ public class Map {
       Cell cell = new Cell();
       cell.setTile(map.getTileSets().getTile(item_id));
       blocksLayer.setCell(i, j, cell);
-      blockHealth[i+j*width] = 5.0f;
+      if (item_id == Item.BLOCK) {
+        blockHealth[i+j*width] = 5.0f;
+        graph.set_cost(i, j, BLOCK_COST);
+      } else {
+        blockHealth[i+j*width] = 0.0f;
+      }
     }
   }
 
@@ -110,7 +116,7 @@ public class Map {
     for (int i=0; i<width; i++) {
       for (int j=0; j<height; j++) {
         if (get_item(i, j) == Item.BLOCK)
-          graph.set_cost(i, j, 10.0f);
+          graph.set_cost(i, j, BLOCK_COST);
         else
           graph.set_cost(i, j, 1.0f);
       }
