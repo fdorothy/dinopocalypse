@@ -10,8 +10,8 @@ in rural Alabama.
 
 Do you have what it takes to defeat General Ankyleesaurus's horde?
 
-Installing
-----------
+Running
+-------
 
 ```
 git clone https://github.com/fdorothy/dinopocalypse.git
