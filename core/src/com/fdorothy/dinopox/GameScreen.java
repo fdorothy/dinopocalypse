@@ -39,7 +39,7 @@ public class GameScreen implements Screen {
 
     camera = new OrthographicCamera();
     camera.setToOrtho(false, game.res.width, game.res.height);
-    camera.zoom = 1.25f;
+    camera.zoom = 1.0;
 
     camera_hud = new OrthographicCamera();
     camera_hud.setToOrtho(false, game.res.width, game.res.height);
@@ -104,14 +104,14 @@ public class GameScreen implements Screen {
     }
 
     // draw the bounding boxes of all sprites, for debug
-    r.begin(ShapeRenderer.ShapeType.Line);
-    survivor.draw_box(r);
-    for (int i=0; i<dinos.size; i++) {
-      Dino d = dinos.get(i);
-      if (d != null && d.state == Dino.STATE_ALIVE)
-        d.draw_box(r);
-    }
-    r.end();
+    // r.begin(ShapeRenderer.ShapeType.Line);
+    // survivor.draw_box(r);
+    // for (int i=0; i<dinos.size; i++) {
+    //   Dino d = dinos.get(i);
+    //   if (d != null && d.state == Dino.STATE_ALIVE)
+    //     d.draw_box(r);
+    // }
+    // r.end();
   }
 
   public void draw_hud() {

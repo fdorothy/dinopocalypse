@@ -63,7 +63,7 @@ public class Wave {
   }
 
   public int print(SpriteBatch batch, String text, int line) {
-    game.res.font.draw(batch, text, game.res.width/2.0f, game.res.height-20*(line+1));
+    game.res.font.draw(batch, text, 10.0f, game.res.height-20*(line+1));
     return line + 1;
   }
 
@@ -74,10 +74,10 @@ public class Wave {
       break;
     case STATE_ATTACK:
       print(batch, "wave " + wave, 0);
-      print(batch, "remaining dinos: " + ai.dinos.size, 1);
+      print(batch, "thunderlizards: " + ai.dinos.size, 1);
       break;
     case STATE_WON:
-      print(batch, "you defeated General Akylee, congratulations!", 0);
+      print(batch, "you defeated General Ankylee, congratulations!", 0);
       print(batch, "Restart in " + wave_countdown + " seconds", 1);
       break;
     }
