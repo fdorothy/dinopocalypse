@@ -1,3 +1,6 @@
+Introduction
+------------
+
 This games was for ludum dare 37 https://ldjam.com/ and made in about 48 hours
 
 2017, the dinopocalypse. Thunderlizards emerge from their subterranean slumber
@@ -6,6 +9,18 @@ to the center of the earth, but he is stranded in a single-room research lab
 in rural Alabama.
 
 Do you have what it takes to defeat General Ankyleesaurus's horde?
+
+Installing
+----------
+
+```
+git clone https://github.com/fdorothy/dinopocalypse.git
+cd dinopocalypse
+./gradlew desktop:run
+```
+
+See libgdx (https://libgdx.badlogicgames.com/) for more info on running
+on different platforms. I've only tested on a Linux desktop.
 
 Rules
 -----
