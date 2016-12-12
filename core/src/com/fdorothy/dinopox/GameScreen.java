@@ -39,7 +39,7 @@ public class GameScreen implements Screen {
 
     camera = new OrthographicCamera();
     camera.setToOrtho(false, game.res.width, game.res.height);
-    camera.zoom = 1.0;
+    camera.zoom = 1.0f;
 
     camera_hud = new OrthographicCamera();
     camera_hud.setToOrtho(false, game.res.width, game.res.height);
@@ -228,8 +228,8 @@ public class GameScreen implements Screen {
     wave.reset();
   }
 
-  public void game_over() {
-    game.setScreen(new GameOverScreen(game, 0));
+  public void game_over(String reason) {
+    game.setScreen(new GameOverScreen(game, reason));
   }
 
   void man_update() {
@@ -243,14 +243,14 @@ public class GameScreen implements Screen {
         float d = z.pos.dst(survivor.pos);
         if (d < 32) {
           Gdx.app.log("game over", "dino hit us, game over");
-          game_over();
+          game_over("You were eaten by a terrible thunderlizard!");
         }
 
         // dino reached the flag, we dead
         d = z.pos.dst(ai.objective);
         if (d < 64) {
           Gdx.app.log("game over", "dino got the flag, game over");
-          game_over();
+          game_over("A thunderlizard captured your home!");
         }
 
         // dino hit bomb, everything around is dead
@@ -288,7 +288,7 @@ public class GameScreen implements Screen {
     float bomb_y = (j + 0.5f) * 32.0f;
     if (hit_by_bomb(survivor, bomb_x, bomb_y)) {
       Gdx.app.log("game over", "survivor hit by bomb, game over");
-      game_over();
+      game_over("You blew yourself up!");
     } else {
       for (int idx=0; idx<dinos.size; idx++) {
         Dino d = dinos.get(idx);

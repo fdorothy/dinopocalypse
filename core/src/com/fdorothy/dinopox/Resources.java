@@ -19,6 +19,7 @@ public class Resources {
   public static final int LEE=4;
 
   public Texture sprites;
+  public Texture gameover;
   public Texture place;
   public Texture pickup;
   public Texture cancel;
@@ -37,6 +38,7 @@ public class Resources {
   public Resources() {
     map = new TmxMapLoader().load("map.tmx");
     sprites = new Texture("tiles.png");
+    gameover = new Texture("gameover.png");
     man = new TextureRegion(sprites, 160, 128, 32, 64);
     bomb = new TextureRegion(sprites, 192, 256, 32, 64);
     item_tiles = new IntMap<TiledMapTile>();
